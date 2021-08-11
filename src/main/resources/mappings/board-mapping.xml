@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BoardDAO">
+	<insert id="insertBoard">
+		<![CDATA[
+			INSERT INTO BOARD(BOARD_TYPE, BOARD_NUM, BOARD_TITLE, BOARD_COMMENT, CREATOR)
+			VALUES(#{boardType}, (SELECT NVL(MAX(BOARD_NUM), 0) + 1 FROM BOARD), #{boardTitle}, #{boardComment}, #{creator})
+		]]>
+	</insert>
+
+	<update id="updateBoard">
+		<![CDATA[
+			UPDATE BOARD
+			SET BOARD_TITLE = #{boardTitle}
+			  , BOARD_COMMENT = #{boardComment}
+			WHERE BOARD_NUM = #{boardNum}
+		]]>
+	</update>
+
+	<delete id="deleteBoard">
+		<![CDATA[
+			DELETE BOARD
+			WHERE BOARD_NUM = #{boardNum}
+		]]>
+	</delete>
+
+	<select id="getBoard" resultType="board">
+		<![CDATA[
+			SELECT * FROM BOARD
+			WHERE BOARD_NUM = #{boardNum}
+		]]>
+	</select>
+
+	<select id="getBoardList" resultType="board">
+		<![CDATA[
+		SELECT *
+        FROM
+        (SELECT ROWNUM as RECNUM, A.* FROM
+                (SELECT com_code.code_name, board.*
+                        FROM BOARD
+                		LEFT OUTER JOIN com_code on board.board_type = com_code.code_id
+                        ORDER BY BOARD_NUM DESC
+                ) A
+        )
+        WHERE RECNUM > (#{pageNum}-1) * #{amount}
+        AND RECNUM <= #{pageNum} * #{amount}
+
+		]]>
+	</select>
+
+	<select id="getTotalCnt" resultType="int">
+		SELECT count(*)
+		FROM BOARD
+	</select>
+
+	<select id="getMenuList" resultType="common">
+		SELECT * FROM COM_CODE WHERE
+		CODE_TYPE = 'menu'
+	</select>
+
+	<select id="getPhoneList" resultType="common">
+		SELECT * FROM COM_CODE
+		WHERE CODE_TYPE = 'phone'
+	</select>
+
+	<select id="getSearchList" resultType="board">
+		<![CDATA[
+		SELECT *
+        FROM
+        (SELECT ROWNUM as RECNUM, A.* FROM
+                (SELECT com_code.code_name, board.*
+                        FROM BOARD
+                		LEFT OUTER JOIN com_code on board.board_type = com_code.code_id
+                		
+		]]>
+		<where>
+			<if test="boardType_a01 != null">
+				BOARD_TYPE = #{boardType_a01}
+			</if>
+			<if test="boardType_a02 != null">
+				OR board_type like #{boardType_a02}
+			</if>
+			<if test="boardType_a03 != null">
+				OR board_type like #{boardType_a03}
+			</if>
+			<if test="boardType_a04 != null">
+				OR board_type like #{boardType_a04}
+			</if>
+		</where>
+                				
+		<![CDATA[	
+                        ORDER BY BOARD_NUM DESC
+                ) A
+        )
+        WHERE RECNUM > (#{pageNum}-1) * #{amount}
+        AND RECNUM <= #{pageNum} * #{amount}
+
+		]]>
+	</select>
+
+	<select id="getSearchTotalCnt" resultType="int">
+		SELECT count(*)
+		FROM
+		BOARD
+		<where>
+			<if test="boardType_a01 != null">
+				BOARD_TYPE = #{boardType_a01}
+			</if>
+			<if test="boardType_a02 != null">
+				OR board_type like #{boardType_a02}
+			</if>
+			<if test="boardType_a03 != null">
+				OR board_type like #{boardType_a03}
+			</if>
+			<if test="boardType_a04 != null">
+				OR board_type like #{boardType_a04}
+			</if>
+		</where>
+	</select>
+</mapper>
